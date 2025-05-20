@@ -1,0 +1,206 @@
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Forecast</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f1e6d9;
+            color: #333;
+        }
+
+        .main-title {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #d1a54c;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container {
+            background: #f5e8d5;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
+        }
+
+        .form-control {
+            background-color: #f8f3e5;
+            border: 1px solid #d1a54c;
+            color: #333;
+        }
+
+        .form-control:focus {
+            background-color: #f1e6d9;
+            border-color: #d1a54c;
+            box-shadow: 0 0 0 0.25rem rgba(209, 165, 76, 0.25);
+        }
+
+        .weather-card {
+            background-color: #f4e1b8;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .weather-card-header {
+            background-color: #d1a54c;
+            color: white;
+            padding: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .temp-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .humidity-info {
+            color: #8a8a8a;
+        }
+
+        .table thead {
+            background-color: #d1a54c;
+            color: #333;
+        }
+
+        .table th {
+            font-weight: bold;
+            color: black;
+        }
+
+        .btn-primary {
+            background-color: #d1a54c;
+            border-color: #d1a54c;
+        }
+
+        .btn-primary:hover {
+            background-color: #c28f47;
+            border-color: #c28f47;
+        }
+
+        .table thead th 
+        {
+        background-color: #d1a54c;
+        color: white;
+        font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- main title-->
+        <h1 class="text-center main-title">Weather Forecast</h1>
+
+        <!-- input -->
+        <div class="form-container mt-4">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="city" class="form-label">City</label>
+                    <input type="text" class="form-control" id="city" name="city" placeholder="Enter City">
+                </div>
+                <div class="mb-3">
+                    <label for="country" class="form-label">Country</label>
+                    <input type="text" class="form-control" id="country" name="country" placeholder="Enter Country">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Weather</button>
+            </form>
+        </div>
+
+        {% if error_message %}
+        <div class="alert alert-danger mt-3 d-flex justify-content-center align-items-center">
+        {{ error_message }}
+        </div>
+        {% endif %}
+
+
+        <!-- weather card-->
+        {% if temperature_today %}
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <div class="card weather-card text-center">
+                    <div class="weather-card-header">
+                        {% if city and country %}
+                            Currently in {{ city }}, {{ country }}
+                        {% elif city %}
+                            Currently in {{ city }}
+                        {% elif country %}
+                            Currently in {{ country }}
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h2 class="temp-value">
+                            {{ temperature_today | round(1) }}°C
+                        </h2>
+                        <p class="humidity-info">
+                            Humidity: {{ humidity_today }}%
+                        </p>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Morning</h5>
+                                <p>{{ temperature_today_morning | round(1) }}°C</p>
+                                <p>{{ humidity_today_morning }}%</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Evening</h5>
+                                <p>{{ temperature_today_evening | round(1) }}°C</p>
+                                <p>{{ humidity_today_evening }}%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if weekly_forecast %}
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <div class="card weather-card">
+                    <div class="card-header text-center text-dark bg-light">
+                        <h5 class="mb-0">
+                            Weekly Forecast 
+                            {% if city and country %}
+                            for {{ city }}, {{ country }}
+                            {% elif city %}
+                                for {{ city }}
+                            {% elif country %}
+                                for {{ country }}
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped table-bordered text-center">
+                            <thead>
+                            <tr>
+                                <th style="font-weight: bold; color: black;">Day</th>
+                                <th style="font-weight: bold; color: black;">Morning (°C)</th>
+                                <th style="font-weight: bold; color: black;">Evening (°C)</th>
+                                <th style="font-weight: bold; color: black;">Morning Humidity (%)</th>
+                                <th style="font-weight: bold; color: black;">Evening Humidity (%)</th>
+                            </tr> 
+                            </thead>
+                            <tbody>
+                                {% for day in weekly_forecast %}
+                                    <tr>
+                                        <td class="fw-bold">{{ day["day"] }}</td>
+                                        <td class="text-primary">{{ day["temp_morning"] | round(1) }}°C</td>
+                                        <td class="text-danger">{{ day["temp_evening"] | round(1) }}°C</td>
+                                        <td class="text-primary">{{ day["humidity_morning"] | round(1) }}%</td>
+                                        <td class="text-danger">{{ day["humidity_evening"] | round(1) }}%</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
