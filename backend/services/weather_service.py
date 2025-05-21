@@ -95,7 +95,6 @@ def get_weather_data(latitude, longitude):
         "weekly_forecast": weekly_forecast  
     }
 
-
 def get_coordinates(city, country):
     query = f"{city}, {country}"
     url = f"https://nominatim.openstreetmap.org/search?q={query}&format=json&accept-language=en&addressdetails=1&limit=1"
@@ -108,16 +107,27 @@ def get_coordinates(city, country):
         latitude = float(location['lat'])
         longitude = float(location['lon'])
 
-        #gets the country, and city if the user entered only city name
-        country_name = location.get('address', {}).get('country', None)
+        address = location.get('address', {})
 
+        # מקבל את שם העיר מתוך הכתובת (address) אם אפשר
+        city_name = address.get('city') or address.get('town') or address.get('village') or city
+
+        # מקבל את שם המדינה מהכתובת או מהתשובה אחרת
+        country_name = address.get('country', None)
         if not country_name:
-            # if no country was not found in 'address', try to extract from 'display_name'
             display_name = location.get('display_name', '')
-            # looking for the last part of the display_name (which should be the country)
             country_name = display_name.split(',')[-1].strip()
         
-        return location['lat'], location['lon'], city, country_name
+        return latitude, longitude, city_name, country_name
     else:
         return None, None, None, None
+
+
+def clean_old_cache(conn):
+    with conn.cursor() as cursor:
+        delete_query = """
+            DELETE FROM weather_cache WHERE timestamp < NOW() - INTERVAL '1 day';
+        """
+        cursor.execute(delete_query)
+        conn.commit()
 
